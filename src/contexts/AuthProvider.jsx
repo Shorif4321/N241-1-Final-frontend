@@ -1,10 +1,62 @@
-import React, { createContext } from "react";
+import React, { createContext, useEffect, useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
+import app from "../firebase/firebase.init";
 
 export const AuthContext = createContext();
+const auth = getAuth(app);
 
+// context components =============
 const AuthProvider = ({ children }) => {
+  // loader
+  const [loading, setLoading] = useState(true);
+  // get current user stat
+  const [user, setUser] = useState(null);
+
+  // create user
+  const createUser = (email, password) => {
+    setLoading(true);
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  // sing in
+  const singIn = (email, password) => {
+    setLoading(true);
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const logOut = () => {
+    return signOut(auth);
+  };
+
+  //update user
+  const updateUser = (updaingUser) => {
+    return updateProfile(auth.currentUser, updaingUser);
+  };
+
+  // obsering who is loged in or sign in // 2,3s
+  useEffect(() => {
+    const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("User observing");
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unSubscribe();
+  }, []);
+
   const authInfo = {
-    name: "FInal",
+    createUser,
+    singIn,
+    updateUser,
+    user,
+    logOut,
+    loading,
   };
   return (
     <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
@@ -12,13 +64,3 @@ const AuthProvider = ({ children }) => {
 };
 
 export default AuthProvider;
-
-// context componet create = rsc
-// create context =  export const AuthContext = createContext();
-// return Context.provider with value =  <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>
-//context call in main.jsx filder must be wrap APP components ==
-/* <AuthProvider>
-      <App />
-</AuthProvider> */
-// context component get children (received children) + set in ContextProvider
-// ContextProvider pass default valu =  <AuthContext.Provider value={authInfo}>

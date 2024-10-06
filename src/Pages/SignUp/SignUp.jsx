@@ -1,8 +1,14 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthProvider";
 
 const SignUp = () => {
+  // singup error
+  const [singUpError, setSingUpError] = useState("");
+  // get context
+  const { createUser, updateUser } = useContext(AuthContext);
+
   const {
     register,
     handleSubmit,
@@ -10,7 +16,22 @@ const SignUp = () => {
   } = useForm();
 
   const handleSignUp = (data) => {
-    console.log(data);
+    setSingUpError("");
+    createUser(data.email, data.password)
+      .then((result) => {
+        const user = result.user;
+        const updatingUser = {
+          displayName: data.name,
+        };
+        updateUser(updatingUser)
+          .then(() => {})
+          .catch((error) => {
+            setSingUpError(error.message);
+          });
+      })
+      .catch((error) => {
+        setSingUpError(error.message);
+      });
   };
 
   return (
@@ -84,6 +105,9 @@ const SignUp = () => {
                 value="Sign Up"
               />
             </div>
+
+            {singUpError && <p className="text-red-500">{singUpError}</p>}
+
             <label className="text-center">
               <Link to="/login" className="label-text-alt link link-hover  ">
                 Already have an account?
