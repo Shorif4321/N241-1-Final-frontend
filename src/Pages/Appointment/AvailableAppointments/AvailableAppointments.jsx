@@ -1,14 +1,19 @@
 import { format } from "date-fns";
 import React, { useEffect, useState } from "react";
 import AppointmentOption from "./AppointmentOption";
+import BookingModal from "../BookingModal/BookingModal";
 
 const AvailableAppointments = ({ selectedDate }) => {
+  const [treatment, setTreatment] = useState(null);
+
   const [appointmentOptions, setAppointmentOptions] = useState([]);
+
   useEffect(() => {
-    fetch("appointmentOptions.json")
+    fetch("http://localhost:7000/appointmentOptions")
       .then((res) => res.json())
       .then((data) => setAppointmentOptions(data));
   }, []);
+
   return (
     <div className="py-24">
       <div className="text-center mb-5">
@@ -23,9 +28,19 @@ const AvailableAppointments = ({ selectedDate }) => {
           <AppointmentOption
             key={option._id}
             appointmentOption={option}
+            setTreatment={setTreatment}
           ></AppointmentOption>
         ))}
       </div>
+
+      {/* ===== call bookin modal===== */}
+      {treatment && (
+        <BookingModal
+          selectedDate={selectedDate}
+          setTreatment={setTreatment}
+          treatment={treatment}
+        ></BookingModal>
+      )}
     </div>
   );
 };
