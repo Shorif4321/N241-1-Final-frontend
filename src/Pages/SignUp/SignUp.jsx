@@ -1,7 +1,8 @@
 import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthProvider";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   // singup error
@@ -24,13 +25,35 @@ const SignUp = () => {
           displayName: data.name,
         };
         updateUser(updatingUser)
-          .then(() => {})
+          .then(() => {
+            savedUserDB(data.name, data.email);
+          })
           .catch((error) => {
             setSingUpError(error.message);
           });
       })
       .catch((error) => {
         setSingUpError(error.message);
+      });
+  };
+
+  const savedUserDB = (name, email) => {
+    const user = { name, email };
+    fetch("http://localhost:7000/users", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(user),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.acknowledged) {
+          toast.success("Account created Successfully done!");
+          <Navigate to="/"></Navigate>;
+        } else {
+          toast.error("Faild to create account");
+        }
       });
   };
 
